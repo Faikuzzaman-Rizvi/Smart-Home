@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Navigation } from './components/Navigation';
@@ -32,19 +32,23 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      <CustomCursor />
-      <Navigation />
-      <Hero />
-      <Partners />
-      <Features />
-      <Products />
-      <CTA />
-      <FAQ />
-      <News />
-      <Contact />
-      <Footer />
-    </div>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <div className="min-h-screen bg-white overflow-x-hidden">
+        <CustomCursor />
+        <Navigation />
+        <main>
+          <Hero />
+          <Partners />
+          <Features />
+          <Products />
+          <CTA />
+          <FAQ />
+          <News />
+          <Contact />
+        </main>
+        <Footer />
+      </div>
+    </Suspense>
   );
 }
 
