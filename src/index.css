@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply antialiased text-gray-900;
+  cursor: none;
+}
+
+/* Hide default cursor on interactive elements */
+a, button, input, textarea {
+  cursor: none;
+}
+
+/* Custom cursor styles */
+.cursor-hover {
+  transform: translate(-50%, -50%) scale(1.5);
+  background-color: rgba(59, 130, 246, 0.1);
+  mix-blend-mode: normal;
+}
+
+.cursor-dot-hover {
+  transform: translate(-50%, -50%) scale(0.5);
+}
+
+/* Smooth animation for hover states */
+a, button {
+  @apply transition-all duration-200;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-blue-500 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-blue-600;
+}
