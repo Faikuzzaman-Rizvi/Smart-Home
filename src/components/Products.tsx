@@ -140,18 +140,18 @@ export const Products = () => {
       const cards = track?.children;
       const carouselWidth = carouselRef.current?.offsetWidth || 0;
       const trackWidth = track?.offsetWidth || 0;
-      const cardWidth = trackWidth / products.length;
       
       // Initial position
       gsap.set(track, { x: 0 });
 
-      // Animate cards on load
+      // Animate cards on load with staggered rotation
       gsap.from(cards, {
         opacity: 0,
         scale: 0.8,
-        duration: 0.8,
+        rotationY: 35,
+        duration: 1.2,
         stagger: {
-          each: 0.1,
+          each: 0.08,
           from: "center"
         },
         ease: "power3.out"
@@ -167,25 +167,117 @@ export const Products = () => {
         },
         edgeResistance: 0.65,
         onDrag: function() {
-          // Update rotation based on drag speed
           const speed = this.getVelocity();
           Array.from(cards).forEach((card: any) => {
             gsap.to(card, {
-              rotation: speed * 0.005,
+              rotationY: speed * 0.02,
               duration: 0.5
             });
           });
         },
         onDragEnd: function() {
-          // Reset rotation smoothly
           Array.from(cards).forEach((card: any) => {
             gsap.to(card, {
-              rotation: 0,
-              duration: 0.5
+              rotationY: 0,
+              duration: 0.8,
+              ease: "elastic.out(1, 0.8)"
             });
           });
         }
       })[0];
+
+      // Enhanced card hover animations
+      if (cards) {
+        Array.from(cards).forEach((card: any) => {
+          const image = card.querySelector('.card-image');
+          const content = card.querySelector('.card-content');
+          const button = card.querySelector('.add-to-cart');
+          const badge = card.querySelector('.sale-badge');
+          const category = card.querySelector('.category-tag');
+
+          // Create hover timeline for each card
+          const hoverTl = gsap.timeline({ paused: true });
+          
+          hoverTl
+            .to(card, {
+              y: -10,
+              scale: 1.05,
+              duration: 0.3,
+              ease: "power2.out"
+            })
+            .to(content, {
+              y: -5,
+              duration: 0.3,
+              ease: "power2.out"
+            }, 0)
+            .to(button, {
+              y: 0,
+              opacity: 1,
+              duration: 0.2
+            }, 0)
+            .to(category, {
+              scale: 1.1,
+              duration: 0.3
+            }, 0);
+
+          if (badge) {
+            hoverTl.to(badge, {
+              scale: 1.1,
+              rotation: 10,
+              duration: 0.3
+            }, 0);
+          }
+
+          // Add hover event listeners
+          card.addEventListener('mouseenter', () => {
+            hoverTl.play();
+            gsap.to(card, {
+              rotationY: 5,
+              duration: 0.4,
+              ease: "power2.out"
+            });
+          });
+
+          card.addEventListener('mouseleave', () => {
+            hoverTl.reverse();
+            gsap.to(card, {
+              rotationY: 0,
+              duration: 0.4,
+              ease: "power2.inOut"
+            });
+          });
+
+          // Add movement animation on mousemove
+          card.addEventListener('mousemove', (e: any) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const deltaX = (x - centerX) / centerX;
+            const deltaY = (y - centerY) / centerY;
+
+            gsap.to(card, {
+              rotationY: deltaX * 3,
+              rotationX: -deltaY * 3,
+              duration: 0.4,
+              ease: "power2.out"
+            });
+          });
+
+          // Reset rotation on mouse leave
+          card.addEventListener('mouseleave', () => {
+            gsap.to(card, {
+              rotationY: 0,
+              rotationX: 0,
+              duration: 0.6,
+              ease: "elastic.out(1, 0.8)"
+            });
+          });
+        });
+      }
 
       // Auto-rotate animation
       const autoRotate = gsap.to(track, {
@@ -196,62 +288,12 @@ export const Products = () => {
         paused: true
       });
 
-      // Start auto-rotation
-      autoRotate.play();
-
       // Pause on hover
       carouselRef.current?.addEventListener('mouseenter', () => autoRotate.pause());
       carouselRef.current?.addEventListener('mouseleave', () => autoRotate.play());
 
-      // Add hover effects to cards
-      if (cards) {
-        Array.from(cards).forEach((card: any) => {
-          const button = card.querySelector('.add-to-cart');
-          const badge = card.querySelector('.sale-badge');
-
-          card.addEventListener('mouseenter', () => {
-            gsap.to(card, {
-              y: -10,
-              scale: 1.05,
-              duration: 0.3,
-              ease: "power2.out"
-            });
-            gsap.to(button, {
-              y: 0,
-              opacity: 1,
-              duration: 0.3
-            });
-            if (badge) {
-              gsap.to(badge, {
-                scale: 1.1,
-                rotation: 10,
-                duration: 0.3
-              });
-            }
-          });
-
-          card.addEventListener('mouseleave', () => {
-            gsap.to(card, {
-              y: 0,
-              scale: 1,
-              duration: 0.3,
-              ease: "power2.inOut"
-            });
-            gsap.to(button, {
-              y: 10,
-              opacity: 0,
-              duration: 0.3
-            });
-            if (badge) {
-              gsap.to(badge, {
-                scale: 1,
-                rotation: 0,
-                duration: 0.3
-              });
-            }
-          });
-        });
-      }
+      // Start auto-rotation
+      autoRotate.play();
     }, sectionRef);
 
     return () => ctx.revert();
@@ -260,7 +302,7 @@ export const Products = () => {
   return (
     <section 
       ref={sectionRef}
-      className="py-20 bg-gradient-to-br from-blue-50/50 to-blue-100/50 overflow-hidden"
+      className="py-20 bg-gradient-to-br from-blue-50/50 to-blue-100/50 overflow-hidden perspective-1000"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
@@ -278,52 +320,53 @@ export const Products = () => {
 
         <div 
           ref={carouselRef}
-          className="relative overflow-hidden"
+          className="relative overflow-visible"
         >
           <div 
             ref={trackRef}
-            className="flex gap-6 cursor-grab active:cursor-grabbing"
-            style={{ width: `${products.length * 300}px` }}
+            className="flex gap-4 cursor-grab active:cursor-grabbing"
+            style={{ width: `${products.length * 260}px` }}
           >
             {products.map((product) => (
               <div 
                 key={product.id}
-                className="w-[280px] flex-shrink-0 bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-300 relative"
+                className="w-[240px] flex-shrink-0 bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 relative group preserve-3d"
+                style={{ transformStyle: 'preserve-3d' }}
               >
                 {product.onSale && (
-                  <div className="sale-badge absolute top-3 right-3 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full z-10 shadow-lg">
+                  <div className="sale-badge absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white text-xs font-semibold px-2 py-1 rounded-full z-10 shadow-lg">
                     Sale!
                   </div>
                 )}
-                <div className="relative h-48 overflow-hidden">
+                <div className="card-image relative h-40 overflow-hidden">
                   <img 
                     src={product.image}
                     alt={product.name}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="category-tag absolute top-2 left-2 bg-white/95 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full shadow-sm">
                     {product.category}
                   </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <div className="card-content p-4 relative z-10 bg-white">
+                  <h3 className="text-base font-semibold text-gray-900 mb-1 truncate group-hover:text-blue-600 transition-colors duration-300">
                     {product.name}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-3">{product.model}</p>
+                  <p className="text-xs text-gray-600 mb-3 truncate">{product.model}</p>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       {product.originalPrice && (
-                        <span className="text-sm text-gray-400 line-through">
+                        <span className="text-xs text-gray-400 line-through">
                           ${product.originalPrice}
                         </span>
                       )}
-                      <span className="text-lg font-bold text-blue-600">
+                      <span className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
                         ${product.price}
                       </span>
                     </div>
                     <button 
-                      className="add-to-cart bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded-full flex items-center gap-1 opacity-0 translate-y-10 transition-all duration-300 shadow-lg"
+                      className="add-to-cart bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 shadow-lg"
                     >
                       <ShoppingCart className="w-3 h-3" />
                       Add
